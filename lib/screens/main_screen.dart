@@ -96,9 +96,10 @@ class _MainScreenState extends State<MainScreen> {
     AdminPendingScreen(),
     AdminAnnouncementsScreen(),
     AdminManagersScreen(),
+    HabarnamaScreen(),
   ];
 
-  static const _adminTitles = ['Garaşylýanlar', 'Bildirişler', 'Dolandyryjylar'];
+  static const _adminTitles = ['Garaşylýanlar', 'Bildirişler', 'Dolandyryjylar', 'Habarnama'];
 
   static const _adminDestinations = [
     NavigationDestination(
@@ -115,6 +116,11 @@ class _MainScreenState extends State<MainScreen> {
       icon: Icon(Icons.people_outline),
       selectedIcon: Icon(Icons.people),
       label: 'Dolandyryjylar',
+    ),
+    NavigationDestination(
+      icon: Icon(Icons.notifications_outlined),
+      selectedIcon: Icon(Icons.notifications),
+      label: 'Habarnama',
     ),
   ];
 

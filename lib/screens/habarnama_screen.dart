@@ -143,6 +143,13 @@ class _LogTile extends StatelessWidget {
                   const SizedBox(height: 6),
                   Text(log.announcementName,
                       style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
+                  if (log.managerUsername.isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      'Dolandyryjy: ${log.managerUsername}',
+                      style: TextStyle(fontSize: 12, color: cs.onSurface.withValues(alpha: 0.55)),
+                    ),
+                  ],
                   if (log.reason.isNotEmpty) ...[
                     const SizedBox(height: 4),
                     Text(
