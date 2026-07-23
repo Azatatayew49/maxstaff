@@ -31,6 +31,20 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
         _selectedVillage = null;
       });
 
+  static String _statusLabel(String v) => switch (v) {
+    'active' => 'Işjeň',
+    'not_active' => 'Işjeň däl',
+    'expired' => 'Möhleti geçen',
+    _ => 'Hemmesi',
+  };
+
+  static String _statusValue(String label) => switch (label) {
+    'Işjeň' => 'active',
+    'Işjeň däl' => 'not_active',
+    'Möhleti geçen' => 'expired',
+    _ => 'all',
+  };
+
   List<Announcement> _filtered(List<Announcement> all) {
     return all.where((a) {
       if (_statusFilter != 'all' && a.status != _statusFilter) { return false; }
@@ -95,23 +109,15 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 child: Row(
                   children: [
-                    for (final f in [
-                      ('all', 'Hemmesi'),
-                      ('active', 'Işjeň'),
-                      ('not_active', 'Işjeň däl'),
-                      ('expired', 'Möhleti geçen'),
-                    ])
-                      Padding(
-                        padding: const EdgeInsets.only(right: 8),
-                        child: ChoiceChip(
-                          label: Text(f.$2),
-                          selected: _statusFilter == f.$1,
-                          onSelected: (_) =>
-                              setState(() => _statusFilter = f.$1),
-                        ),
-                      ),
+                    _DropChip(
+                      label: _statusLabel(_statusFilter),
+                      active: _statusFilter != 'all',
+                      items: const ['Hemmesi', 'Işjeň', 'Işjeň däl', 'Möhleti geçen'],
+                      onSelected: (v) => setState(() => _statusFilter = _statusValue(v)),
+                      onClear: () => setState(() => _statusFilter = 'all'),
+                    ),
                     if (categories.isNotEmpty) ...[
-                      const SizedBox(width: 4),
+                      const SizedBox(width: 8),
                       _DropChip(
                         label: _selectedCategory ?? 'Kategoriýa',
                         active: _selectedCategory != null,
