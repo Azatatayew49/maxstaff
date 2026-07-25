@@ -160,6 +160,7 @@ class PendingEdit {
   final String editedByUsername;
   final DateTime editedAt;
   final String originalAnnouncementName;
+  final List<String> photos;
 
   PendingEdit({
     required this.id,
@@ -171,6 +172,7 @@ class PendingEdit {
     required this.editedByUsername,
     required this.editedAt,
     required this.originalAnnouncementName,
+    required this.photos,
   });
 
   factory PendingEdit.fromJson(Map<String, dynamic> json) {
@@ -187,6 +189,11 @@ class PendingEdit {
           : DateTime.now(),
       originalAnnouncementName:
           json['original_announcement']?['name'] ?? '',
+      photos: (json['pending_photos'] as List?)
+              ?.map((p) => p['image'] as String? ?? '')
+              .where((s) => s.isNotEmpty)
+              .toList() ??
+          [],
     );
   }
 }
