@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import '../models/models.dart';
 import '../services/api_service.dart';
 import '../widgets/gps_field.dart';
+import '../widgets/date_or_days_field.dart';
 
 class CreateAnnouncementScreen extends StatefulWidget {
   const CreateAnnouncementScreen({super.key});
@@ -53,16 +54,6 @@ class _CreateAnnouncementScreenState extends State<CreateAnnouncementScreen> {
     _phoneCtrl.dispose();
     _msgCtrl.dispose();
     super.dispose();
-  }
-
-  Future<void> _pickDate() async {
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now().add(const Duration(days: 30)),
-      firstDate: DateTime.now(),
-      lastDate: DateTime.now().add(const Duration(days: 365 * 2)),
-    );
-    if (picked != null) setState(() => _expirationDate = picked);
   }
 
   Future<void> _pickPhotos() async {
@@ -176,14 +167,9 @@ class _CreateAnnouncementScreenState extends State<CreateAnnouncementScreen> {
             ),
             const SizedBox(height: 12),
 
-            OutlinedButton.icon(
-              onPressed: _pickDate,
-              icon: const Icon(Icons.calendar_today_outlined),
-              label: Text(_expirationDate == null
-                  ? 'Möhletini saýlaň'
-                  : 'Möhleti: ${_expirationDate!.year}-${_expirationDate!.month.toString().padLeft(2, '0')}-${_expirationDate!.day.toString().padLeft(2, '0')}'),
-              style: OutlinedButton.styleFrom(
-                  minimumSize: const Size(double.infinity, 50)),
+            DateOrDaysField(
+              value: _expirationDate,
+              onChanged: (d) => setState(() => _expirationDate = d),
             ),
             const SizedBox(height: 12),
 
