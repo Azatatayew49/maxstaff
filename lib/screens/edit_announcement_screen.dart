@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../models/models.dart';
 import '../services/api_service.dart';
+import '../widgets/gps_field.dart';
 
 class EditAnnouncementScreen extends StatefulWidget {
   final Announcement announcement;
@@ -26,6 +27,9 @@ class _EditAnnouncementScreenState extends State<EditAnnouncementScreen> {
   Village? _selectedVillage;
   List<File> _newPhotos = [];
   bool _loading = false;
+  double? _latitude;
+  double? _longitude;
+  bool _gpsLoading = false;
 
   List<Category> _categories = [];
   List<Village> _villages = [];
@@ -40,6 +44,8 @@ class _EditAnnouncementScreenState extends State<EditAnnouncementScreen> {
     if (a.expirationDate.isNotEmpty) {
       _expirationDate = DateTime.tryParse(a.expirationDate);
     }
+    _latitude = a.latitude;
+    _longitude = a.longitude;
     _loadDropdowns();
   }
 
@@ -52,7 +58,6 @@ class _EditAnnouncementScreenState extends State<EditAnnouncementScreen> {
           _categories = cats;
           _villages = vills;
           _selectedCategory = cats.where((c) => c.id == widget.announcement.category.id).firstOrNull;
-          // Village matching by name since we only have name in Announcement
           _selectedVillage = vills.where((v) => v.name == widget.announcement.villageName).firstOrNull;
         });
       }
@@ -86,6 +91,23 @@ class _EditAnnouncementScreenState extends State<EditAnnouncementScreen> {
     }
   }
 
+  Future<void> _getGps() async {
+    setState(() => _gpsLoading = true);
+    try {
+      final result = await GpsField.getLocation(context);
+      if (result != null && mounted) {
+        setState(() { _latitude = result.lat; _longitude = result.lng; });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('GPS alynmady: $e')));
+      }
+    } finally {
+      if (mounted) setState(() => _gpsLoading = false);
+    }
+  }
+
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     if (_expirationDate == null) {
@@ -111,6 +133,8 @@ class _EditAnnouncementScreenState extends State<EditAnnouncementScreen> {
         categoryId: _selectedCategory!.id,
         villageId: _selectedVillage!.id,
         messageToAdmin: _msgCtrl.text.trim(),
+        latitude: _latitude,
+        longitude: _longitude,
         photos: _newPhotos,
       );
       if (!mounted) return;
@@ -124,9 +148,7 @@ class _EditAnnouncementScreenState extends State<EditAnnouncementScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text('Ýalňyşlyk: $e'),
-              backgroundColor: Colors.red));
+          SnackBar(content: Text('Ýalňyşlyk: $e'), backgroundColor: Colors.red));
       }
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -145,7 +167,6 @@ class _EditAnnouncementScreenState extends State<EditAnnouncementScreen> {
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            // Status banner
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               decoration: BoxDecoration(
@@ -169,8 +190,7 @@ class _EditAnnouncementScreenState extends State<EditAnnouncementScreen> {
             const SizedBox(height: 12),
             _field(_descCtrl, 'Düşündiriş', maxLines: 4, required: true),
             const SizedBox(height: 12),
-            _field(_phoneCtrl, 'Telefon (8 san)',
-                keyboardType: TextInputType.phone),
+            _field(_phoneCtrl, 'Telefon (8 san)', keyboardType: TextInputType.phone),
             const SizedBox(height: 12),
 
             DropdownButtonFormField<Category>(
@@ -205,6 +225,15 @@ class _EditAnnouncementScreenState extends State<EditAnnouncementScreen> {
                   : 'Möhleti: ${_expirationDate!.year}-${_expirationDate!.month.toString().padLeft(2, '0')}-${_expirationDate!.day.toString().padLeft(2, '0')}'),
               style: OutlinedButton.styleFrom(
                   minimumSize: const Size(double.infinity, 50)),
+            ),
+            const SizedBox(height: 12),
+
+            GpsField(
+              latitude: _latitude,
+              longitude: _longitude,
+              loading: _gpsLoading,
+              onGet: _getGps,
+              onClear: () => setState(() { _latitude = null; _longitude = null; }),
             ),
             const SizedBox(height: 12),
 
@@ -253,8 +282,7 @@ class _EditAnnouncementScreenState extends State<EditAnnouncementScreen> {
                 child: _loading
                     ? const CircularProgressIndicator(color: Colors.white)
                     : const Text('Üýtgetme ibermek',
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold)),
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               ),
             ),
           ],

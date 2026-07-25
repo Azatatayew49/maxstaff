@@ -114,6 +114,8 @@ class PendingAnnouncement {
   final String createdByUsername;
   final DateTime createdAt;
   final List<String> photos;
+  final double? latitude;
+  final double? longitude;
 
   PendingAnnouncement({
     required this.id,
@@ -126,6 +128,8 @@ class PendingAnnouncement {
     required this.createdByUsername,
     required this.createdAt,
     required this.photos,
+    this.latitude,
+    this.longitude,
   });
 
   factory PendingAnnouncement.fromJson(Map<String, dynamic> json) {
@@ -146,6 +150,12 @@ class PendingAnnouncement {
               .where((s) => s.isNotEmpty)
               .toList() ??
           [],
+      latitude: json['latitude'] != null
+          ? double.tryParse(json['latitude'].toString())
+          : null,
+      longitude: json['longitude'] != null
+          ? double.tryParse(json['longitude'].toString())
+          : null,
     );
   }
 }

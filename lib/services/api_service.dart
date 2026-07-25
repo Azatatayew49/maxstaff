@@ -63,6 +63,8 @@ class ApiService {
     required int categoryId,
     required int villageId,
     String messageToAdmin = '',
+    double? latitude,
+    double? longitude,
     List<File> photos = const [],
   }) async {
     final token = await AuthService().getToken();
@@ -78,6 +80,9 @@ class ApiService {
       ..fields['category'] = categoryId.toString()
       ..fields['village'] = villageId.toString()
       ..fields['message_to_admin'] = messageToAdmin;
+
+    if (latitude != null) request.fields['latitude'] = latitude.toStringAsFixed(7);
+    if (longitude != null) request.fields['longitude'] = longitude.toStringAsFixed(7);
 
     for (final file in photos) {
       request.files.add(await http.MultipartFile.fromPath('photos', file.path));
@@ -100,6 +105,8 @@ class ApiService {
     required int categoryId,
     required int villageId,
     String messageToAdmin = '',
+    double? latitude,
+    double? longitude,
     List<File> photos = const [],
   }) async {
     final token = await AuthService().getToken();
@@ -115,6 +122,51 @@ class ApiService {
       ..fields['category'] = categoryId.toString()
       ..fields['village'] = villageId.toString()
       ..fields['message_to_admin'] = messageToAdmin;
+
+    if (latitude != null) request.fields['latitude'] = latitude.toStringAsFixed(7);
+    if (longitude != null) request.fields['longitude'] = longitude.toStringAsFixed(7);
+
+    for (final file in photos) {
+      request.files.add(await http.MultipartFile.fromPath('photos', file.path));
+    }
+
+    final streamed = await request.send().timeout(_timeout);
+    if (streamed.statusCode != 200 && streamed.statusCode != 201) {
+      final body = await streamed.stream.bytesToString();
+      throw Exception('Üýtgetme iberilip bilinmedi: $body');
+    }
+  }
+
+  // ── Update pending announcement (manager corrects before approval) ─
+  Future<void> updatePendingAnnouncement({
+    required int id,
+    required String name,
+    required String description,
+    required String phoneNumber,
+    required String expirationDate,
+    required int categoryId,
+    required int villageId,
+    String messageToAdmin = '',
+    double? latitude,
+    double? longitude,
+    List<File> photos = const [],
+  }) async {
+    final token = await AuthService().getToken();
+    final request = http.MultipartRequest(
+      'PATCH',
+      Uri.parse('$baseUrl/api/pending-announcements/$id/'),
+    )
+      ..headers['Authorization'] = 'Token $token'
+      ..fields['name'] = name
+      ..fields['description'] = description
+      ..fields['phone_number'] = phoneNumber
+      ..fields['expiration_date'] = expirationDate
+      ..fields['category'] = categoryId.toString()
+      ..fields['village'] = villageId.toString()
+      ..fields['message_to_admin'] = messageToAdmin;
+
+    if (latitude != null) request.fields['latitude'] = latitude.toStringAsFixed(7);
+    if (longitude != null) request.fields['longitude'] = longitude.toStringAsFixed(7);
 
     for (final file in photos) {
       request.files.add(await http.MultipartFile.fromPath('photos', file.path));
