@@ -3,6 +3,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:intl/intl.dart';
 import '../../models/models.dart';
 import '../../services/api_service.dart';
+import '../edit_pending_screen.dart';
 
 class AdminPendingScreen extends StatefulWidget {
   const AdminPendingScreen({super.key});
@@ -138,6 +139,15 @@ class _AdminPendingScreenState extends State<AdminPendingScreen>
         onReject: () {
           Navigator.pop(context);
           _rejectAnn(a.id, a.name);
+        },
+        onEdit: () {
+          Navigator.pop(context);
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => EditPendingScreen(pending: a),
+            ),
+          ).then((edited) { if (edited == true) _reload(); });
         },
       ),
     );
@@ -420,6 +430,7 @@ class _DetailSheet extends StatefulWidget {
   final String? originalName;
   final VoidCallback onApprove;
   final VoidCallback onReject;
+  final VoidCallback? onEdit;
 
   const _DetailSheet({
     required this.title,
@@ -434,6 +445,7 @@ class _DetailSheet extends StatefulWidget {
     this.originalName,
     required this.onApprove,
     required this.onReject,
+    this.onEdit,
   });
 
   @override
@@ -614,6 +626,22 @@ class _DetailSheetState extends State<_DetailSheet> {
                   ],
 
                   // Action buttons
+                  if (widget.onEdit != null) ...[
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: widget.onEdit,
+                        icon: const Icon(Icons.edit_outlined, size: 18),
+                        label: const Text('Düzetmek'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.orange,
+                          side: const BorderSide(color: Colors.orange),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                  ],
                   Row(
                     children: [
                       Expanded(
