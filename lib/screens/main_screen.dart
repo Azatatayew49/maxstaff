@@ -7,6 +7,9 @@ import 'login_screen.dart';
 import 'admin/admin_pending_screen.dart';
 import 'admin/admin_announcements_screen.dart';
 import 'admin/admin_managers_screen.dart';
+import 'admin/admin_stores_screen.dart';
+import 'admin/admin_media_screen.dart';
+import 'manager_store_items_screen.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -70,6 +73,7 @@ class _MainScreenState extends State<MainScreen> {
   static const _managerScreens = [
     AnnouncementsScreen(),
     SubmissionsScreen(),
+    ManagerStoreItemsScreen(),
     HabarnamaScreen(),
   ];
 
@@ -85,9 +89,14 @@ class _MainScreenState extends State<MainScreen> {
       label: 'Iberilen',
     ),
     NavigationDestination(
+      icon: Icon(Icons.store_outlined),
+      selectedIcon: Icon(Icons.store),
+      label: 'Dükan harytlary',
+    ),
+    NavigationDestination(
       icon: Icon(Icons.notifications_outlined),
       selectedIcon: Icon(Icons.notifications),
-      label: 'Habarnama',
+      label: 'Habar',
     ),
   ];
 
@@ -95,32 +104,44 @@ class _MainScreenState extends State<MainScreen> {
   static const _adminScreens = [
     AdminPendingScreen(),
     AdminAnnouncementsScreen(),
+    AdminStoresScreen(),
     AdminManagersScreen(),
+    AdminMediaScreen(),
     HabarnamaScreen(),
   ];
 
-  static const _adminTitles = ['Garaşylýanlar', 'Bildirişler', 'Dolandyryjylar', 'Habarnama'];
+  static const _adminTitles = ['Tassykla', 'Bildiriş', 'Dükan', 'Staff', 'Mahabat', 'Habar'];
 
   static const _adminDestinations = [
     NavigationDestination(
       icon: Icon(Icons.pending_actions_outlined),
       selectedIcon: Icon(Icons.pending_actions),
-      label: 'Garaşylýanlar',
+      label: 'Tassykla',
     ),
     NavigationDestination(
       icon: Icon(Icons.campaign_outlined),
       selectedIcon: Icon(Icons.campaign),
-      label: 'Bildirişler',
+      label: 'Bildiriş',
+    ),
+    NavigationDestination(
+      icon: Icon(Icons.store_outlined),
+      selectedIcon: Icon(Icons.store),
+      label: 'Dükan',
     ),
     NavigationDestination(
       icon: Icon(Icons.people_outline),
       selectedIcon: Icon(Icons.people),
-      label: 'Dolandyryjylar',
+      label: 'Staff',
+    ),
+    NavigationDestination(
+      icon: Icon(Icons.photo_library_outlined),
+      selectedIcon: Icon(Icons.photo_library),
+      label: 'Mahabat',
     ),
     NavigationDestination(
       icon: Icon(Icons.notifications_outlined),
       selectedIcon: Icon(Icons.notifications),
-      label: 'Habarnama',
+      label: 'Habar',
     ),
   ];
 

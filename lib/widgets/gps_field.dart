@@ -7,6 +7,7 @@ class GpsField extends StatelessWidget {
   final bool loading;
   final VoidCallback onGet;
   final VoidCallback onClear;
+  final ValueChanged<({double lat, double lng})> onManual;
 
   const GpsField({
     super.key,
@@ -15,6 +16,7 @@ class GpsField extends StatelessWidget {
     required this.loading,
     required this.onGet,
     required this.onClear,
+    required this.onManual,
   });
 
   static Future<({double lat, double lng})?> getLocation(BuildContext context) async {
@@ -37,6 +39,79 @@ class GpsField extends StatelessWidget {
       ),
     );
     return (lat: pos.latitude, lng: pos.longitude);
+  }
+
+  static Future<({double lat, double lng})?> showManualDialog(
+      BuildContext context, double? currentLat, double? currentLng) async {
+    final latCtrl = TextEditingController(
+        text: currentLat != null ? currentLat.toString() : '');
+    final lngCtrl = TextEditingController(
+        text: currentLng != null ? currentLng.toString() : '');
+    final formKey = GlobalKey<FormState>();
+
+    final result = await showDialog<({double lat, double lng})>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('GPS koordinatlary'),
+        content: Form(
+          key: formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextFormField(
+                controller: latCtrl,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
+                decoration: const InputDecoration(
+                  labelText: 'Giňlik (latitude)',
+                  border: OutlineInputBorder(),
+                ),
+                validator: (v) {
+                  if (v == null || v.trim().isEmpty) return 'Hökmany';
+                  final n = double.tryParse(v.trim());
+                  if (n == null || n < -90 || n > 90) return '-90 … 90';
+                  return null;
+                },
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: lngCtrl,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
+                decoration: const InputDecoration(
+                  labelText: 'Uzynlyk (longitude)',
+                  border: OutlineInputBorder(),
+                ),
+                validator: (v) {
+                  if (v == null || v.trim().isEmpty) return 'Hökmany';
+                  final n = double.tryParse(v.trim());
+                  if (n == null || n < -180 || n > 180) return '-180 … 180';
+                  return null;
+                },
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Ýatyr'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              if (formKey.currentState!.validate()) {
+                final lat = double.parse(latCtrl.text.trim());
+                final lng = double.parse(lngCtrl.text.trim());
+                Navigator.pop(ctx, (lat: lat, lng: lng));
+              }
+            },
+            child: const Text('Ýatla'),
+          ),
+        ],
+      ),
+    );
+
+    latCtrl.dispose();
+    lngCtrl.dispose();
+    return result;
   }
 
   @override
@@ -63,6 +138,16 @@ class GpsField extends StatelessWidget {
                 color: hasLocation ? color : Colors.grey[600],
                 fontSize: 14,
               ),
+            ),
+          ),
+          GestureDetector(
+            onTap: () async {
+              final coords = await showManualDialog(context, latitude, longitude);
+              if (coords != null) onManual(coords);
+            },
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 6),
+              child: Icon(Icons.edit_outlined, size: 18, color: Colors.grey[600]),
             ),
           ),
           if (hasLocation)

@@ -3,6 +3,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../../models/models.dart';
 import '../../services/api_service.dart';
 import '../edit_announcement_screen.dart';
+import '../create_announcement_screen.dart';
 
 class AdminAnnouncementsScreen extends StatefulWidget {
   const AdminAnnouncementsScreen({super.key});
@@ -55,17 +56,6 @@ class _AdminAnnouncementsScreenState extends State<AdminAnnouncementsScreen> {
     }).toList();
   }
 
-  Future<void> _setStatus(Announcement a, String newStatus) async {
-    try {
-      await ApiService().updateAnnouncementStatus(a.id, newStatus);
-      _reload();
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('$e'), backgroundColor: Colors.red));
-      }
-    }
-  }
 
   Future<void> _delete(Announcement a) async {
     final ok = await showDialog<bool>(
@@ -97,6 +87,23 @@ class _AdminAnnouncementsScreenState extends State<AdminAnnouncementsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    return Scaffold(
+      body: _buildBody(),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () async {
+          final created = await Navigator.push<bool>(
+            context,
+            MaterialPageRoute(builder: (_) => const CreateAnnouncementScreen()),
+          );
+          if (created == true) _reload();
+        },
+        icon: const Icon(Icons.add),
+        label: const Text('Täze bildiriş'),
+      ),
+    );
+  }
+
+  Widget _buildBody() {
     return FutureBuilder<List<Announcement>>(
       future: _future,
       builder: (ctx, snap) {
@@ -188,7 +195,6 @@ class _AdminAnnouncementsScreenState extends State<AdminAnnouncementsScreen> {
                     itemCount: list.length,
                     itemBuilder: (_, i) => _AnnCard(
                       ann: list[i],
-                      onSetStatus: (s) => _setStatus(list[i], s),
                       onDelete: () => _delete(list[i]),
                       onEdit: _reload,
                     ),
@@ -275,13 +281,11 @@ class _DropChip extends StatelessWidget {
 
 class _AnnCard extends StatelessWidget {
   final Announcement ann;
-  final void Function(String) onSetStatus;
   final VoidCallback onDelete;
   final VoidCallback onEdit;
 
   const _AnnCard({
     required this.ann,
-    required this.onSetStatus,
     required this.onDelete,
     required this.onEdit,
   });
@@ -296,7 +300,7 @@ class _AnnCard extends StatelessWidget {
           final edited = await Navigator.push<bool>(
             context,
             MaterialPageRoute(
-                builder: (_) => EditAnnouncementScreen(announcement: ann)),
+                builder: (_) => EditAnnouncementScreen(announcement: ann, isAdmin: true)),
           );
           if (edited == true) onEdit();
         },
@@ -331,9 +335,26 @@ class _AnnCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(ann.name,
-                        style: const TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 14)),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(ann.name,
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 14)),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: Colors.grey[200],
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text('ID: ${ann.id}',
+                              style: TextStyle(
+                                  color: Colors.grey[600], fontSize: 11,
+                                  fontWeight: FontWeight.w600)),
+                        ),
+                      ],
+                    ),
                     const SizedBox(height: 2),
                     Text(ann.villageName,
                         style: TextStyle(color: Colors.grey[500], fontSize: 12)),
@@ -360,19 +381,6 @@ class _AnnCard extends StatelessWidget {
                     const SizedBox(height: 8),
                     Row(
                       children: [
-                        if (ann.status != 'active')
-                          _ActionBtn(
-                            label: 'Işjeňleşdir',
-                            color: const Color(0xFF2E7D32),
-                            onTap: () => onSetStatus('active'),
-                          ),
-                        if (ann.status == 'active')
-                          _ActionBtn(
-                            label: 'Öçür',
-                            color: Colors.orange,
-                            onTap: () => onSetStatus('not_active'),
-                          ),
-                        const SizedBox(width: 6),
                         _ActionBtn(
                           label: 'Poz',
                           color: Colors.red,

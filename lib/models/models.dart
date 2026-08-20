@@ -33,6 +33,7 @@ class Announcement {
   final double? longitude;
   final List<String> photos;
   final DateTime createdAt;
+  final int priority;
 
   Announcement({
     required this.id,
@@ -47,6 +48,7 @@ class Announcement {
     this.longitude,
     required this.photos,
     required this.createdAt,
+    this.priority = 0,
   });
 
   factory Announcement.fromJson(Map<String, dynamic> json) {
@@ -75,6 +77,7 @@ class Announcement {
       createdAt: json['created_at'] != null
           ? DateTime.parse(json['created_at'])
           : DateTime.now(),
+      priority: json['priority'] ?? 0,
     );
   }
 
@@ -252,6 +255,228 @@ class AnnouncementLog {
 
   String get actionLabel => isApproved ? 'Tassyklandy' : 'Ret edildi';
   String get typeLabel => isEdit ? 'Üýtgetme' : 'Bildiriş';
+}
+
+class Banner {
+  final int id;
+  final String photo;
+  final String linkType;
+  final int? linkId;
+  final String linkLabel;
+
+  Banner({required this.id, required this.photo, required this.linkType, this.linkId, required this.linkLabel});
+
+  factory Banner.fromJson(Map<String, dynamic> json) => Banner(
+        id: json['id'] ?? 0,
+        photo: json['photo'] ?? '',
+        linkType: json['link_type'] ?? 'none',
+        linkId: json['link_id'] as int?,
+        linkLabel: json['link_label'] ?? '',
+      );
+}
+
+class Promotion {
+  final int id;
+  final String photo;
+  final String linkType;
+  final int? linkId;
+  final String linkLabel;
+  final String frequency;
+  final bool isActive;
+  final int priority;
+
+  Promotion({
+    required this.id,
+    required this.photo,
+    required this.linkType,
+    this.linkId,
+    required this.linkLabel,
+    required this.frequency,
+    required this.isActive,
+    required this.priority,
+  });
+
+  factory Promotion.fromJson(Map<String, dynamic> json) => Promotion(
+        id: json['id'] ?? 0,
+        photo: json['photo'] ?? '',
+        linkType: json['link_type'] ?? 'none',
+        linkId: json['link_id'] as int?,
+        linkLabel: json['link_label'] ?? '',
+        frequency: json['frequency'] ?? 'always',
+        isActive: json['is_active'] ?? true,
+        priority: json['priority'] ?? 0,
+      );
+}
+
+class NotificationLog {
+  final int id;
+  final String title;
+  final String body;
+  final int sentTo;
+  final int successCount;
+  final int failureCount;
+  final DateTime createdAt;
+
+  NotificationLog({
+    required this.id,
+    required this.title,
+    required this.body,
+    required this.sentTo,
+    required this.successCount,
+    required this.failureCount,
+    required this.createdAt,
+  });
+
+  factory NotificationLog.fromJson(Map<String, dynamic> json) => NotificationLog(
+        id: json['id'] ?? 0,
+        title: json['title'] ?? '',
+        body: json['body'] ?? '',
+        sentTo: json['sent_to'] ?? 0,
+        successCount: json['success_count'] ?? 0,
+        failureCount: json['failure_count'] ?? 0,
+        createdAt: json['created_at'] != null ? DateTime.parse(json['created_at']) : DateTime.now(),
+      );
+}
+
+class StoreCategory {
+  final int id;
+  final String name;
+  StoreCategory({required this.id, required this.name});
+  factory StoreCategory.fromJson(Map<String, dynamic> json) =>
+      StoreCategory(id: json['id'] ?? 0, name: json['name'] ?? '');
+  @override
+  bool operator ==(Object other) => other is StoreCategory && other.id == id;
+  @override
+  int get hashCode => id.hashCode;
+  @override
+  String toString() => name;
+}
+
+class Store {
+  final int id;
+  final String name;
+  final String picture;
+  final String description;
+  final String? openTime;
+  final String? closeTime;
+  final String? phoneNumber;
+  final double? latitude;
+  final double? longitude;
+  final int villageId;
+  final String villageName;
+  final int categoryId;
+  final String categoryName;
+  final bool isActive;
+
+  Store({
+    required this.id,
+    required this.name,
+    required this.picture,
+    required this.description,
+    this.openTime,
+    this.closeTime,
+    this.phoneNumber,
+    this.latitude,
+    this.longitude,
+    required this.villageId,
+    required this.villageName,
+    required this.categoryId,
+    required this.categoryName,
+    required this.isActive,
+  });
+
+  factory Store.fromJson(Map<String, dynamic> json) => Store(
+        id: json['id'] ?? 0,
+        name: json['name'] ?? '',
+        picture: json['picture'] ?? '',
+        description: json['description'] ?? '',
+        openTime: json['open_time'] as String?,
+        closeTime: json['close_time'] as String?,
+        phoneNumber: json['phone_number'] as String?,
+        latitude: json['latitude'] != null ? double.tryParse(json['latitude'].toString()) : null,
+        longitude: json['longitude'] != null ? double.tryParse(json['longitude'].toString()) : null,
+        villageId: json['village'] ?? 0,
+        villageName: json['village_name'] ?? '',
+        categoryId: json['category'] ?? 0,
+        categoryName: json['category_name'] ?? '',
+        isActive: json['is_active'] ?? true,
+      );
+}
+
+class StoreItem {
+  final int id;
+  final int storeId;
+  final String name;
+  final String picture;
+  final String description;
+  final double? price;
+
+  StoreItem({
+    required this.id,
+    required this.storeId,
+    required this.name,
+    required this.picture,
+    required this.description,
+    this.price,
+  });
+
+  factory StoreItem.fromJson(Map<String, dynamic> json) {
+    double? price;
+    if (json['price'] != null) price = double.tryParse(json['price'].toString());
+    return StoreItem(
+      id: json['id'] ?? 0,
+      storeId: json['store'] ?? 0,
+      name: json['name'] ?? '',
+      picture: json['picture'] ?? '',
+      description: json['description'] ?? '',
+      price: price,
+    );
+  }
+}
+
+class PendingStoreItem {
+  final int id;
+  final int storeId;
+  final String storeName;
+  final String name;
+  final String picture;
+  final String description;
+  final double? price;
+  final String messageToAdmin;
+  final String submittedByUsername;
+  final DateTime createdAt;
+
+  PendingStoreItem({
+    required this.id,
+    required this.storeId,
+    required this.storeName,
+    required this.name,
+    required this.picture,
+    required this.description,
+    this.price,
+    required this.messageToAdmin,
+    required this.submittedByUsername,
+    required this.createdAt,
+  });
+
+  factory PendingStoreItem.fromJson(Map<String, dynamic> json) {
+    double? price;
+    if (json['price'] != null) price = double.tryParse(json['price'].toString());
+    return PendingStoreItem(
+      id: json['id'] ?? 0,
+      storeId: json['store'] ?? 0,
+      storeName: json['store_name'] ?? '',
+      name: json['name'] ?? '',
+      picture: json['picture'] ?? '',
+      description: json['description'] ?? '',
+      price: price,
+      messageToAdmin: json['message_to_admin'] ?? '',
+      submittedByUsername: json['submitted_by_username'] ?? '',
+      createdAt: json['created_at'] != null
+          ? DateTime.parse(json['created_at'])
+          : DateTime.now(),
+    );
+  }
 }
 
 class Manager {

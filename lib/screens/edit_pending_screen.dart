@@ -226,6 +226,7 @@ class _EditPendingScreenState extends State<EditPendingScreen> {
               loading: _gpsLoading,
               onGet: _getGps,
               onClear: () => setState(() { _latitude = null; _longitude = null; }),
+              onManual: (c) => setState(() { _latitude = c.lat; _longitude = c.lng; }),
             ),
             const SizedBox(height: 12),
 

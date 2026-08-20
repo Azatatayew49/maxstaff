@@ -19,7 +19,7 @@ class _AdminManagersScreenState extends State<AdminManagersScreen> {
     _future = ApiService().fetchManagers();
   }
 
-  void _reload() => setState(() => _future = ApiService().fetchManagers());
+  void _reload() => setState(() { _future = ApiService().fetchManagers(); });
 
   Future<void> _create() async {
     final result = await showDialog<Map<String, String>>(

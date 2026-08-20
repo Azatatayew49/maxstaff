@@ -8,8 +8,9 @@ import '../widgets/date_or_days_field.dart';
 
 class EditAnnouncementScreen extends StatefulWidget {
   final Announcement announcement;
+  final bool isAdmin;
 
-  const EditAnnouncementScreen({super.key, required this.announcement});
+  const EditAnnouncementScreen({super.key, required this.announcement, this.isAdmin = false});
 
   @override
   State<EditAnnouncementScreen> createState() =>
@@ -34,6 +35,10 @@ class _EditAnnouncementScreenState extends State<EditAnnouncementScreen> {
 
   List<Category> _categories = [];
   List<Village> _villages = [];
+  bool _statusLoading = false;
+  late String _currentStatus;
+  late int _currentPriority;
+  bool _priorityLoading = false;
 
   @override
   void initState() {
@@ -47,6 +52,8 @@ class _EditAnnouncementScreenState extends State<EditAnnouncementScreen> {
     }
     _latitude = a.latitude;
     _longitude = a.longitude;
+    _currentStatus = a.status;
+    _currentPriority = a.priority;
     _loadDropdowns();
   }
 
@@ -96,6 +103,47 @@ class _EditAnnouncementScreenState extends State<EditAnnouncementScreen> {
       }
     } finally {
       if (mounted) setState(() => _gpsLoading = false);
+    }
+  }
+
+  Future<void> _setPriority(int priority) async {
+    setState(() => _priorityLoading = true);
+    try {
+      await ApiService().updateAnnouncementPriority(widget.announcement.id, priority);
+      if (!mounted) return;
+      setState(() => _currentPriority = priority);
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(priority == 0 ? 'Ileri tutma aýyryldy' : 'Ileri tutma $priority goýuldy'),
+        backgroundColor: const Color(0xFF2E7D32),
+      ));
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('$e'), backgroundColor: Colors.red));
+      }
+    } finally {
+      if (mounted) setState(() => _priorityLoading = false);
+    }
+  }
+
+  Future<void> _setStatus(String newStatus) async {
+    setState(() => _statusLoading = true);
+    try {
+      await ApiService().updateAnnouncementStatus(widget.announcement.id, newStatus);
+      if (!mounted) return;
+      setState(() => _currentStatus = newStatus);
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(newStatus == 'active' ? 'Işjeňleşdirildi' : 'Öçürildi'),
+        backgroundColor: newStatus == 'active' ? const Color(0xFF2E7D32) : Colors.orange,
+      ));
+      Navigator.pop(context, true);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('$e'), backgroundColor: Colors.red));
+      }
+    } finally {
+      if (mounted) setState(() => _statusLoading = false);
     }
   }
 
@@ -175,6 +223,108 @@ class _EditAnnouncementScreenState extends State<EditAnnouncementScreen> {
                 ],
               ),
             ),
+            if (widget.isAdmin) ...[
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  if (_currentStatus != 'active')
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: _statusLoading ? null : () => _setStatus('active'),
+                        icon: _statusLoading
+                            ? const SizedBox(width: 16, height: 16,
+                                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                            : const Icon(Icons.check_circle_outline, size: 18),
+                        label: const Text('Işjeňleşdir'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF2E7D32),
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        ),
+                      ),
+                    ),
+                  if (_currentStatus == 'active') ...[
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: _statusLoading ? null : () => _setStatus('not_active'),
+                        icon: _statusLoading
+                            ? const SizedBox(width: 16, height: 16,
+                                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                            : const Icon(Icons.pause_circle_outline, size: 18),
+                        label: const Text('Öçür'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.orange,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+              const SizedBox(height: 10),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                decoration: BoxDecoration(
+                  color: Colors.blue.withValues(alpha: 0.05),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: Colors.blue.withValues(alpha: 0.2)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(Icons.star_outline, size: 18, color: Colors.blue),
+                        const SizedBox(width: 8),
+                        const Text('Ileri tutma:', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+                        if (_priorityLoading) ...[
+                          const SizedBox(width: 12),
+                          const SizedBox(width: 18, height: 18,
+                              child: CircularProgressIndicator(strokeWidth: 2)),
+                        ],
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    if (!_priorityLoading)
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 6,
+                        children: List.generate(11, (i) {
+                          final selected = _currentPriority == i;
+                          return GestureDetector(
+                            onTap: () => _setPriority(i),
+                            child: Container(
+                              width: 34, height: 34,
+                              decoration: BoxDecoration(
+                                color: selected
+                                    ? (i == 0 ? Colors.grey : Colors.blue)
+                                    : Colors.transparent,
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                  color: selected
+                                      ? (i == 0 ? Colors.grey : Colors.blue)
+                                      : Colors.grey.withValues(alpha: 0.4),
+                                ),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  i == 0 ? '—' : '$i',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 13,
+                                    color: selected ? Colors.white : Colors.grey[700],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        }),
+                      ),
+                  ],
+                ),
+              ),
+            ],
             const SizedBox(height: 16),
 
             _field(_nameCtrl, 'Bildirişiň ady', required: true),
@@ -220,6 +370,7 @@ class _EditAnnouncementScreenState extends State<EditAnnouncementScreen> {
               loading: _gpsLoading,
               onGet: _getGps,
               onClear: () => setState(() { _latitude = null; _longitude = null; }),
+              onManual: (c) => setState(() { _latitude = c.lat; _longitude = c.lng; }),
             ),
             const SizedBox(height: 12),
 
